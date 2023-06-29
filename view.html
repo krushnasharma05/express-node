@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Management System</title>
+</head>
+<body>
+  <h1>User Management System</h1>
+
+  <form id="userForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" required><br><br>
+  
+    <label for="phone">Phone:</label>
+    <input type="tel" id="phone" required><br><br>
+  
+    <label for="email">Email:</label>
+    <input type="email" id="email" required><br><br>
+  
+    <input type="submit" value="Save">
+  </form>
+
+  <h2>Users:</h2>
+  <ul id="userList"></ul>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const userForm = document.getElementById('userForm');
+    const userList = document.getElementById('userList');
+
+    // Function to fetch and display the users
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/getUser');
+        const users = response.data;
+        userList.innerHTML = '';
+        users.forEach(user => {
+          const li = document.createElement('li');
+          li.innerText = `Name: ${user.name}, Phone: ${user.phone}, Email: ${user.email}`;
+          userList.appendChild(li);
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    // Event listener for form submission
+    userForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const nameInput = document.getElementById('name');
+      const phoneInput = document.getElementById('phone');
+      const emailInput = document.getElementById('email');
+      const data = {
+        name: nameInput.value,
+        phone: phoneInput.value,
+        email: emailInput.value
+      };
+      try {
+        await axios.post('http://localhost:3000/saveUser', data);
+        nameInput.value = '';
+        phoneInput.value = '';
+        emailInput.value = '';
+        fetchUsers();
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    // Fetch users initially
+    fetchUsers();
+  </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Signup Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        .error {
+            color: red;
+            font-size: 0.8rem;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            $('#signupForm').submit(function(event) {
+                event.preventDefault(); // Prevent form submission
+                var name = $('#name').val();
+                var email = $('#email').val();
+                var password = $('#password').val();
+                var error = false;
+
+                $('.error').remove(); // Clear previous error messages
+
+                // Validate name field
+                if (name === '') {
+                    $('#name').after('<span class="error">Please enter your name</span>');
+                    error = true;
+                }
+
+                // Validate email field
+                if (email === '') {
+                    $('#email').after('<span class="error">Please enter your email</span>');
+                    error = true;
+                }
+
+                // Validate password field
+                if (password === '') {
+                    $('#password').after('<span class="error">Please enter a password</span>');
+                    error = true;
+                }
+
+                // Submit the form if no errors
+                if (!error) {
+                    $('#signupForm')[0].submit();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Signup</h2>
+        <form id="signupForm" method="post">
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <input type="text" class="form-control" id="name" name="name">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" name="email">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password:</label>
+                <input type="password" class="form-control" id="password" name="password">
+            </div>
+            <button type="submit" class="btn btn-primary">Signup</button>
+        </form>
+    </div>
+</body>
+</html>

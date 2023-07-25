@@ -30,16 +30,16 @@ exports.postLogin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const existingUser = await User.findOne({ where: { email } });
-    if (!existingUser) {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
       return res.status(404).send({ message: 'User not found' });
     }
 
-    if (existingUser.password !== password) {
-      return res.status(401).send({ message: 'Incorrect password' });
+    if (user.password !== password) {
+      return res.status(401).send({ message: 'User not authorized' });
     }
 
-    res.send({ message: 'Logged in successfully' });
+    res.send({ message: 'User login successful' });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: 'Login failed' });

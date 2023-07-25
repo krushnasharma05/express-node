@@ -1,3 +1,4 @@
+// app.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -26,3 +27,5 @@ User.sync()
   .catch(err => {
     console.log(err);
   });
+
+module.exports = app;

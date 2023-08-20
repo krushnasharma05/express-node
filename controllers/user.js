@@ -1,4 +1,4 @@
-// controllers/user.js
+const bcrypt = require('bcrypt');
 const User = require('../models/user');
 
 exports.getSignup = (req, res) => {
@@ -7,6 +7,7 @@ exports.getSignup = (req, res) => {
 
 exports.postSignup = async (req, res) => {
   const { name, email, password } = req.body;
+  const saltRounds = 10; // Number of salt rounds for bcrypt
 
   try {
     const existingUser = await User.findOne({ where: { email } });
@@ -14,7 +15,9 @@ exports.postSignup = async (req, res) => {
       return res.status(409).send({ message: 'User already exists' });
     }
 
-    await User.create({ name, email, password });
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    await User.create({ name, email, password: hashedPassword });
+
     res.status(201).send({ message: 'User created successfully' });
   } catch (error) {
     console.log(error);
@@ -35,8 +38,9 @@ exports.postLogin = async (req, res) => {
       return res.status(404).send({ message: 'User not found' });
     }
 
-    if (user.password !== password) {
-      return res.status(401).send({ message: 'User not authorized' });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).send({ message: 'Password does not match' });
     }
 
     res.send({ message: 'User login successful' });

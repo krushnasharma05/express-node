@@ -20,7 +20,7 @@ app.use('/user', userRoute);
 User.sync()
   .then(() => {
     console.log('User table created successfully.');
-    app.listen(3000, () => {
+    app.listen(3000, () => {  
       console.log('Server is running on port 3000');
     });
   })

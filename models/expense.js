@@ -1,26 +1,26 @@
+// Create a new file models/expense.js
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../util/database');
 
-const User = sequelize.define('user', {
+const Expense = sequelize.define('expense', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     allowNull: false,
-    primaryKey: true
+    primaryKey: true,
   },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
+  amount: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
   },
-  email: {
+  description: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true
   },
-  password: {
+  category: {
     type: DataTypes.STRING,
-    allowNull: false
-  }
+    allowNull: false,
+  },
 });
 
-module.exports = User;
+module.exports = Expense;

@@ -6,4 +6,3 @@ const sequelize = new Sequelize('expense', 'root', 'Krushna@123', {
 });
 
 module.exports = sequelize;
-  

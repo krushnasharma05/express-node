@@ -1,4 +1,3 @@
-// Create a new file models/expense.js
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../util/database');
 
@@ -23,4 +22,4 @@ const Expense = sequelize.define('expense', {
   },
 });
 
-module.exports = Expense;
+module.exports = Expense; 

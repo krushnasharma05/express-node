@@ -24,8 +24,9 @@
         <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
       </div>
       <p id="msg"></p>
-      <button type="submit" id="submit" class="btn btn-primary">Login</button>
+      <button type="submit" id="submit" class="btn btn-primary">Login</button>    
     </form>
+
     <a href="signup">new here?</a>
   </div>
 
@@ -43,6 +44,7 @@ submit.addEventListener('click',async ()=>{
     const obj = {'email':email.value,'password':password.value};
     try{
         const res = await axios.post("http://localhost:3000/user/login",obj);
+        localStorage.setItem('isPremiumUser',res.data.isPremiumUser);
         localStorage.setItem('token',res.data.userId ) ;
         location.replace('/user/expense');
     }

@@ -33,7 +33,7 @@ exports.updateStatus = async (req,res,next) => {
 
         await order.update({paymentId: paymentId, status: "SUCCESSFUL"});
         await req.user.update({isPremiumUser : true});
-        res.status(202).json({success:true, massage: "transaction is succesful"})
+        res.status(200).json({success:true, massage: "transaction is succesful"})
     }
     catch(err){console.log(err)};
 

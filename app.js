@@ -4,11 +4,17 @@ const cors = require('cors');
 const path = require('path');
 
 const connection = require('./util/database');
+
 const userTable = require('./models/user');
 const expenseTable = require('./models/expense');
+const order = require('./models/orders');
+
 
 const userRoute = require('./routes/user');
 const expenseRoute = require('./routes/expense');
+const orderRoute = require('./routes/purchase');
+const premiumRoute = require('./routes/premium');
+
 
 const app = express();
 
@@ -19,9 +25,16 @@ app.use(express.static('views'));
 
 app.use('/user', userRoute);
 app.use('/expense', expenseRoute);
+app.use('/purchase', orderRoute);
+app.use('/premium', premiumRoute);
+
+
 
 userTable.hasMany(expenseTable);
 expenseTable.belongsTo(userTable);
+
+userTable.hasMany(order);
+order.belongsTo(userTable);
 
 
 connection.sync()

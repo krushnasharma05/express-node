@@ -2,19 +2,30 @@ const expenseTable = require('../models/expense');
 const userTable = require('../models/user');
 
 exports.postExpense = async (req, res) => {
-    try {
+  try {
       const { amount, description, category } = req.body;
-      const userId = req.user.id; // Retrieve user ID from the authenticated request
-  
+      const userId = req.user.id;
+
       // Create a new expense record in the database associated with the user ID
-      const result = await expenseTable.create({ amount:amount, description:description, category:category, userId:userId });
-  
+      const result = await expenseTable.create({
+          amount: amount,
+          description: description,
+          category: category,
+          userId: userId
+      });
+
+      // Update user's totalExpense
+      const user = await userTable.findByPk(userId);
+      await user.update({
+          totalExpense: user.totalExpense + parseFloat(amount)
+      });
+
       res.status(201).json(result);
-    } catch (error) {
+  } catch (error) {
       console.log(error);
       res.status(500).send({ message: 'Failed to add expense' });
-    }
-  };
+  }
+};
 
   exports.getExpense = async (req, res) => {
     try {
@@ -30,15 +41,15 @@ exports.postExpense = async (req, res) => {
   exports.deleteExpense = async (req, res) => {
     try {
       const { id } = req.params;
-  
+
       // Find the expense by ID and delete it
       const deletedExpense = await expenseTable.findByPk(id);
       if (!deletedExpense) {
         return res.status(404).send({ message: 'Expense not found' });
       }
-  
+
       await deletedExpense.destroy();
-  
+
       res.status(200).send({ message: 'Expense deleted successfully' });
     } catch (error) {
       console.error(error);

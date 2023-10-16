@@ -10,20 +10,19 @@
         integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
+        .table th,
+        .table td {
+            text-align: center;
+        }
 
-      .table th, .table td {
-          text-align: center;
-      }
+        .table tbody tr {
+            height: 10px;
+        }
 
-      .table tbody tr {
-          height: 10px;
-      }
-
-      #expense-list li {
-          margin-bottom: 10px;
-      }
-
-  </style>
+        #expense-list li {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 
 <body>
@@ -67,181 +66,188 @@
     </div>
 
     <div class="container mt-2" id="leaderboard-container" style="display: none;">
-      <h2>Leaderboard</h2>
-      <table class="table table-hover bg-white text-center rounded">
-          <thead class="bg-success-subtle">
-              <th>User ID</th>
-              <th>Name</th>
-              <th>Total Amount</th>
-          </thead>
-          <tbody id="leaderboard-body"></tbody>
-      </table>
-  </div>
+        <h2>Leaderboard</h2>
+        <table class="table table-hover bg-white text-center rounded">
+            <thead class="bg-success-subtle">
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Total Amount</th>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+        </table>
+    </div>
 
     <script defer src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-      const token = localStorage.getItem('token');
-      const isPremiumUser = localStorage.getItem('isPremiumUser');
-      const amount = document.querySelector('#amount');
-      const description = document.querySelector('#description');
-      const category = document.querySelector('#category');
-      const submit = document.querySelector('#submit');
-      const expense_list = document.querySelector('#expense-list');
-      const buyPremium = document.getElementById('buyPremium');
-      const premiumStatusMessage = document.getElementById('premiumStatus');
-        const showLeaderboardButton = document.getElementById('showLeaderboard');
-        const leaderboardContainer = document.getElementById('leaderboard-container');
-        const leaderboardBody = document.getElementById('leaderboard-body');
-
-        
-
-async function fetchAndDisplayLeaderboard() {
-    try {
-        const response = await axios.get('http://localhost:3000/premium/showLeaderboard', {
-            headers: { 'auth': token }
-        });
-        const leaderboardData = response.data;
-
-        leaderboardData.sort((a, b) => b.total_amount - a.total_amount); // Sort in descending order
-
-        leaderboardBody.innerHTML = ''; // Clear previous data.
-
-        leaderboardData.forEach(data => {
-            const row = document.createElement('tr');
-            const userIdCell = document.createElement('td');
-            const nameCell = document.createElement('td');
-            const amountCell = document.createElement('td');
-
-            userIdCell.textContent = data.userId; // Display userId
-            nameCell.textContent = data.name;
-            amountCell.textContent = data.total_amount;
-
-            row.appendChild(userIdCell);
-            row.appendChild(nameCell);
-            row.appendChild(amountCell);
-            leaderboardBody.appendChild(row);
-        });
-
-        leaderboardContainer.style.display = 'block'; // Show the leaderboard container
-    } catch (error) {
-        console.error('Error fetching leaderboard data:', error);
-    }
-}
-
-// Event listener for the "Show Leaderboard" button
-showLeaderboardButton.addEventListener('click', fetchAndDisplayLeaderboard);
-
-
-
-      submit.addEventListener('click', async (event) => {
-          event.preventDefault();
-          const obj = { amount: amount.value, description: description.value, category: category.value };
-
-          try {
-              const result = await axios.post('http://localhost:3000/expense/add', obj,
-                  { headers: { auth: token } });
-              if (result) {
-                  const ui = document.createElement('li');
-                  const deleteBtn = document.createElement('button');
-                  ui.innerHTML = `${result.data.amount} - ${result.data.category} - ${result.data.description}`;
-                  deleteBtn.textContent = 'Delete';
-                  deleteBtn.className = 'btn btn-danger btn-sm';
-                  deleteBtn.addEventListener('click', async () => {
-                      const deleteRes = await axios.get(`http://localhost:3000/expense/delete/${result.data.id}`,
-                          { headers: { auth: token } });
-
-                      if (deleteRes.status === 200) {
-                          expense_list.removeChild(ui);
-                      }
-                  });
-                  ui.appendChild(deleteBtn);
-                  expense_list.appendChild(ui);
-              }
-          } catch (error) {
-              console.error('Error adding expense:', error);
-          }
-      });
-
-      window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                if (isPremiumUser === "true") {
-                    premiumStatusMessage.textContent = 'You are a premium user.';
-                    buyPremium.style.visibility = 'hidden';
-                    showLeaderboardButton.style.display = 'block';
-                } else{
-                  showLeaderboardButton.style.display = 'none';
-                   buyPremium.onclick = async (e) => {
-                        try {
-                            const res = await axios.get("http://localhost:3000/purchase/primiumMembership",
-                                { headers: { 'auth': token } });
-                            var options = {
-                                "key": res.data.key_id,
-                                "order_id": res.data.order.id,
-                                "handler": async function (response) {
-                                    try {
-                                        const paymentResponse = await axios.post("http://localhost:3000/purchase/updateStatus", {
-                                            orderId: options.order_id,
-                                            paymentId: response.razorpay_payment_id
-                                        }, { headers: { 'auth': token } });
-
-                                        if (paymentResponse.status === 200) {
-                                            window.alert('Congratulations! You are now a premium user.');
-                                            premiumStatusMessage.textContent = 'You are a premium user.';
-                                            buyPremium.style.display = 'none';
-                                            showLeaderboardButton.style.display = 'block';
-                                        } else {
-                                            window.alert('Failed to update premium status. Please contact support.');
-                                        }
-                                    } catch (error) {
-                                        console.error('Error updating premium status:', error);
-                                        window.alert('Failed to update premium status. Please contact support.');
-                                    }
+        window.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            let isPremiumUser = localStorage.getItem('isPremiumUser');
+            if (isPremiumUser === null) {
+                isPremiumUser = 'false'; // Default to 'false' if not set in localStorage
+            }
+            const amount = document.querySelector('#amount');
+            const description = document.querySelector('#description');
+            const category = document.querySelector('#category');
+            const submit = document.querySelector('#submit');
+            const expense_list = document.querySelector('#expense-list');
+            const buyPremiumButton = document.getElementById('buyPremium');
+            const premiumStatusMessage = document.getElementById('premiumStatus');
+            const showLeaderboardButton = document.getElementById('showLeaderboard');
+            const leaderboardContainer = document.getElementById('leaderboard-container');
+            const leaderboardBody = document.getElementById('leaderboard-body');
+    
+            async function fetchAndDisplayLeaderboard() {
+                try {
+                    const response = await axios.get('http://localhost:3000/premium/showLeaderboard', {
+                        headers: { 'auth': token }
+                    });
+                    const leaderboardData = response.data;
+    
+                    leaderboardData.sort((a, b) => b.total_amount - a.total_amount); // Sort in descending order
+    
+                    leaderboardBody.innerHTML = ''; // Clear previous data.
+    
+                    leaderboardData.forEach(data => {
+                        const row = document.createElement('tr');
+                        const userIdCell = document.createElement('td');
+                        const nameCell = document.createElement('td');
+                        const amountCell = document.createElement('td');
+    
+                        userIdCell.textContent = data.userId; // Display userId
+                        nameCell.textContent = data.name;
+                        amountCell.textContent = data.total_amount;
+    
+                        row.appendChild(userIdCell);
+                        row.appendChild(nameCell);
+                        row.appendChild(amountCell);
+                        leaderboardBody.appendChild(row);
+                    });
+    
+                    leaderboardContainer.style.display = 'block'; // Show the leaderboard container
+                } catch (error) {
+                    console.error('Error fetching leaderboard data:', error);
+                }
+            }
+    
+            // Event listener for the "Show Leaderboard" button
+            showLeaderboardButton.addEventListener('click', fetchAndDisplayLeaderboard);
+    
+            submit.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const obj = { amount: amount.value, description: description.value, category: category.value };
+    
+                try {
+                    const result = await axios.post('http://localhost:3000/expense/add', obj,
+                        { headers: { auth: token } });
+                    if (result) {
+                        const ui = document.createElement('li');
+                        const deleteBtn = document.createElement('button');
+                        ui.innerHTML = `${result.data.amount} - ${result.data.category} - ${result.data.description}`;
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.className = 'btn btn-danger btn-sm';
+                        deleteBtn.addEventListener('click', async () => {
+                            const deleteRes = await axios.get(`http://localhost:3000/expense/delete/${result.data.id}`,
+                                { headers: { auth: token } });
+    
+                            if (deleteRes.status === 200) {
+                                expense_list.removeChild(ui);
+                            }
+                        });
+                        ui.appendChild(deleteBtn);
+                        expense_list.appendChild(ui);
+                    }
+                } catch (error) {
+                    console.error('Error adding expense:', error);
+                }
+            });
+    
+            if (isPremiumUser === 'true') {
+                premiumStatusMessage.textContent = 'You are a premium user.';
+                buyPremiumButton.style.display = 'none';
+                showLeaderboardButton.style.display = 'block';
+            } else {
+                premiumStatusMessage.textContent = '';
+                buyPremiumButton.style.display = 'block';
+                showLeaderboardButton.style.display = 'none';
+            }
+    
+            buyPremiumButton.addEventListener('click', async (e) => {
+                try {
+                    const res = await axios.get("http://localhost:3000/purchase/primiumMembership",
+                        { headers: { 'auth': token } });
+                    var options = {
+                        "key": res.data.key_id,
+                        "order_id": res.data.order.id,
+                        "handler": async function (response) {
+                            try {
+                                const paymentResponse = await axios.post("http://localhost:3000/purchase/updateStatus", {
+                                    orderId: options.order_id,
+                                    paymentId: response.razorpay_payment_id
+                                }, { headers: { 'auth': token } });
+    
+                                if (paymentResponse.status === 200) {
+                                    window.alert('Congratulations! You are now a premium user.');
+                                    premiumStatusMessage.textContent = 'You are a premium user.';
+                                    buyPremiumButton.style.display = 'none';
+                                    showLeaderboardButton.style.display = 'block';
+                                    localStorage.setItem('isPremiumUser', 'true'); // Set isPremiumUser to 'true'
+                                } else {
+                                    window.alert('Failed to update premium status. Please contact support.');
+                                    localStorage.setItem('isPremiumUser', 'false'); // Set isPremiumUser to 'false' if payment fails
                                 }
-                            };
-                            const rzp1 = new Razorpay(options);
-                            rzp1.open();
-                            e.preventDefault();
-
-                            rzp1.on('payment.failed', function (response) {
-                                console.log(response);
-                                alert("Something went wrong!");
-                            });
-                        } catch (error) {
-                            console.error('Error initiating payment:', error);
+                            } catch (error) {
+                                console.error('Error updating premium status:', error);
+                                window.alert('Failed to update premium status. Please contact support.');
+                                localStorage.setItem('isPremiumUser', 'false'); // Set isPremiumUser to 'false' if updating status fails
+                            }
                         }
                     };
-              }
-
-              const response = await axios.get('http://localhost:3000/expense/fetch', {
-                  headers: { auth: token },
-              });
-              const expenses = response.data;
-              expenses.forEach((expense) => {
-                  const ui = document.createElement('li');
-                  const deleteBtn = document.createElement('button');
-                  ui.innerHTML = `${expense.amount} - ${expense.category} - ${expense.description}`;
-                  deleteBtn.textContent = 'Delete';
-                  deleteBtn.className = 'btn btn-danger btn-sm';
-                  deleteBtn.addEventListener('click', async () => {
-                      const result = await axios.get(`http://localhost:3000/expense/delete/${expense.id}`,
-                          { headers: { auth: token } });
-
-                      if (result.status === 200) {
-                          expense_list.removeChild(ui);
-                      }
-                  });
-                  ui.appendChild(deleteBtn);
-                  expense_list.appendChild(ui);
-              });
-          } catch (error) {
-              console.error(error);
-          }
-      });
-  </script>
+                    const rzp1 = new Razorpay(options);
+                    rzp1.open();
+                    e.preventDefault();
+    
+                    rzp1.on('payment.failed', function (response) {
+                        console.log(response);
+                        alert("Something went wrong!");
+                        localStorage.setItem('isPremiumUser', 'false'); // Set isPremiumUser to 'false' if payment fails
+                    });
+                } catch (error) {
+                    console.error('Error initiating payment:', error);
+                    localStorage.setItem('isPremiumUser', 'false'); // Set isPremiumUser to 'false' if payment initiation fails
+                }
+            });
+    
+            // Fetch and display existing expenses
+            try {
+                const response = await axios.get('http://localhost:3000/expense/fetch', {
+                    headers: { auth: token },
+                });
+                const expenses = response.data;
+                expenses.forEach((expense) => {
+                    const ui = document.createElement('li');
+                    const deleteBtn = document.createElement('button');
+                    ui.innerHTML = `${expense.amount} - ${expense.category} - ${expense.description}`;
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.className = 'btn btn-danger btn-sm';
+                    deleteBtn.addEventListener('click', async () => {
+                        const result = await axios.get(`http://localhost:3000/expense/delete/${expense.id}`,
+                            { headers: { auth: token } });
+    
+                        if (result.status === 200) {
+                            expense_list.removeChild(ui);
+                        }
+                    });
+                    ui.appendChild(deleteBtn);
+                    expense_list.appendChild(ui);
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    </script>
+    
 </body>
 
 </html>
-
-

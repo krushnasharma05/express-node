@@ -12,17 +12,17 @@ exports.showLeaderboard = async (req, res, next) => {
             group: 'userId',
             include: [{
                 model: usertable,
-                attributes: ['name']
+                attributes: ['id', 'name']
             }]
         });
 
         // Extract necessary data and transform the response
         const leaderboardData = results.map(result => ({
-            userId: result.dataValues.userId,
+            userId: result.user.id,
             name: result.user.name,
             total_amount: result.dataValues.total_amount
         }));
-        
+
         console.log('Leaderboard data:', leaderboardData);
         res.json(leaderboardData);
 
